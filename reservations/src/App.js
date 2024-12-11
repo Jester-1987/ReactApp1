@@ -1,6 +1,6 @@
 // removed import to logo.svg as it's never used
 import './App.css';
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ResBanner from './ResBanner';
 import ResCreator from './ResCreator';
 import ResRow from './ResRow';
@@ -32,27 +32,64 @@ function App() {
 
   const createNewRes = (task) => {
     if (!resItems
-      .find(item => item.action === task)
-    )
+      .find((item) => item.action === task))
     {
-      setResItems([
-        ...resItems,
-        { action: task, done: false }
-      ]);
+      const updatedRes = [...resItems, {action: task, done: false}];
+      setResItems(updatedRes);
+      localStorage.setItem("reservations", JSON.stringify(updatedRes));
     }
   };
 
   const toggleRes = (res) => {
-    setResItems(resItems.map((item) =>
+    const updatedRes = resItems.map((item) =>
     item.action === res.action
-      ? {...item,done: !item.done }
-    :item
-  ));
+      ? { ...item, done: !item.done}
+      :item
+    );
+    setResItems(updatedRes);
+    localStorage.setItem("reservations", JSON.stringify(updatedRes));
   };
 
   const resTableRows = (doneValue) => resItems.filter(item => item.done === doneValue).map(item =>
     <ResRow Key={ item.action } item={ item } toggle={ toggleRes } />
   )
+
+  useEffect(() => {
+    try {
+      const data = localStorage.getItem("reservations");
+      if(data)
+      {
+        const parsedData = JSON.parse(data);
+        if(Array.isArray(parsedData)) {
+          setResItems(parsedData);
+        }
+      }
+      else {
+        [resItems] = [
+          // first area
+          {action: "Evergreen Haven | 9:00 AM - 12:00 PM", done: true},
+          {action: "Evergreen Haven | 12:00 PM - 3:00 PM", done: false},
+          {action: "Evergreen Haven | 3:00 PM - 6:00 PM", done: false},
+          // second area
+          {action: "Crystal Lake Preserve | 9:00 AM - 12:00 PM", done: false},
+          {action: "Crystal Lake Preserve | 12:00 PM - 3:00 PM", done: false},
+          {action: "Crystal Lake Preserve | 3:00 PM - 6:00 PM", done: true},
+          // third area
+          {action: "Sundown Prairie | 9:00 AM - 12:00 PM", done: false},
+          {action: "Sundown Prairie | 12:00 PM - 3:00 PM", done: true},
+          {action: "Sundown Prairie | 3:00 PM - 6:00 PM", done: false},
+          //fourth area
+          {action: "Stone Ridge Sanctuary | 9:00 AM - 12:00 PM", done: false},
+          {action: "Stone Ridge Sanctuary | 12:00 PM - 3:00 PM", done: false},
+          {action: "Stone Ridge Sanctuary | 3:00 PM - 6:00 PM", done: false}
+        ];
+        [showReserved] = true;
+      }
+    }
+    catch(error) {
+      console.error("Failed to load reservations:", error);
+    }
+  })
 
   return (
     <div>
